@@ -20,12 +20,17 @@ import java.util.List;
 @CrossOrigin
 public class CategoriesController
 {
-    @Autowired
     private CategoryDao categoryDao;
     private ProductDao productDao;
 
 
     // create an Autowired controller to inject the categoryDao and ProductDao
+
+    @Autowired
+    public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
+        this.categoryDao = categoryDao;
+        this.productDao = productDao;
+    }
 
     // add the appropriate annotation for a get action
     @GetMapping("")
@@ -36,23 +41,24 @@ public class CategoriesController
     }
 
     // add the appropriate annotation for a get action
-    @GetMapping("/{id}")
-    public ResponseEntity<Category> getById(@PathVariable int id)
+    @GetMapping("/{categoryId}")
+    public ResponseEntity<Category> getById(@PathVariable int categoryId)
     {
         // get the category by id
-        return new ResponseEntity<>(categoryDao.getById(id), HttpStatus.OK);
+        return new ResponseEntity<>(categoryDao.getById(categoryId), HttpStatus.OK);
     }
 
     // the url to return all products in category 1 would look like this
     // https://localhost:8080/categories/1/products
     @GetMapping("{categoryId}/products")
-    public List<Product> getProductsById(@PathVariable int categoryId)
+    public ResponseEntity<List<Product>> getProductsById(@PathVariable int categoryId)
     {
         // get a list of product by categoryId
-        return null;
+        return new ResponseEntity<>(productDao.listByCategoryId(categoryId), HttpStatus.OK);
     }
 
     // add annotation to call this method for a POST action
+    @PostMapping("")
     // add annotation to ensure that only an ADMIN can call this function
     public Category addCategory(@RequestBody Category category)
     {
