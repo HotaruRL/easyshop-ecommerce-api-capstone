@@ -1,5 +1,6 @@
 package org.yearup.controllers;
 
+import org.apache.tomcat.util.http.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -83,11 +84,24 @@ public class CategoriesController
         }
     }
 
-
-    // add annotation to call this method for a DELETE action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
-    public void deleteCategory(@PathVariable int id)
+    @DeleteMapping("/{categoryId}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public HttpStatus deleteCategory(@PathVariable int categoryId)
     {
-        // delete the category by id
+        try
+        {
+            var product = productDao.getById(categoryId);
+
+            if(product == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+            categoryDao.delete(categoryId);
+
+            return HttpStatus.OK;
+        }
+        catch(Exception ex)
+        {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
+        }
     }
 }
