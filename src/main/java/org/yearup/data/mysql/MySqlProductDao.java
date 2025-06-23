@@ -154,7 +154,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     }
 
     @Override
-    public void update(int productId, Product product)
+    public Product update(int productId, Product product)
     {
         String sql = "UPDATE products" +
                 " SET name = ? " +
@@ -180,16 +180,22 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             statement.setBoolean(8, product.isFeatured());
             statement.setInt(9, productId);
 
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // get the newly updated product
+                return getById(productId);
+            }
         }
         catch (SQLException e)
         {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     @Override
-    public void delete(int productId)
+    public Product delete(int productId)
     {
 
         String sql = "DELETE FROM products " +
@@ -200,12 +206,18 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
             PreparedStatement statement = connection.prepareStatement(sql);
             statement.setInt(1, productId);
 
-            statement.executeUpdate();
+            int rowsAffected = statement.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // get the newly updated product
+                return getById(productId);
+            }
         }
         catch (SQLException e)
         {
             throw new RuntimeException(e);
         }
+        return null;
     }
 
     protected static Product mapRow(ResultSet row) throws SQLException
