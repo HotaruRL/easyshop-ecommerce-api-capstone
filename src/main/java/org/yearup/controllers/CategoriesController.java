@@ -1,6 +1,5 @@
 package org.yearup.controllers;
 
-import org.apache.tomcat.util.http.ResponseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,8 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/categories")
 @CrossOrigin
-public class CategoriesController
-{
+public class CategoriesController {
     private CategoryDao categoryDao;
     private ProductDao productDao;
 
@@ -30,22 +28,20 @@ public class CategoriesController
 
     @GetMapping("")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<Category>> getAll()
-    {
+    public ResponseEntity<List<Category>> getAll() {
         try {
             return new ResponseEntity<>(categoryDao.getAllCategories(), HttpStatus.OK);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
 
     @GetMapping("/{categoryId}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Category> getById(@PathVariable int categoryId)
-    {
+    public ResponseEntity<Category> getById(@PathVariable int categoryId) {
         try {
             return new ResponseEntity<>(categoryDao.getById(categoryId), HttpStatus.OK);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
@@ -54,53 +50,43 @@ public class CategoriesController
     // https://localhost:8080/categories/1/products
     @GetMapping("{categoryId}/products")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<Product>> getProductsById(@PathVariable int categoryId)
-    {
+    public ResponseEntity<List<Product>> getProductsById(@PathVariable int categoryId) {
         try {
             return new ResponseEntity<>(productDao.listByCategoryId(categoryId), HttpStatus.OK);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
 
     @PostMapping("")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Category> addCategory(@RequestBody Category category)
-    {
+    public ResponseEntity<Category> addCategory(@RequestBody Category category) {
         return new ResponseEntity<>(categoryDao.create(category), HttpStatus.CREATED);
     }
 
     @PutMapping("/{categoryId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Category> updateCategory(@PathVariable int categoryId, @RequestBody Category category)
-    {
-        try
-        {
+    public ResponseEntity<Category> updateCategory(@PathVariable int categoryId, @RequestBody Category category) {
+        try {
             return new ResponseEntity<>(categoryDao.update(categoryId, category), HttpStatus.ACCEPTED);
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
 
     @DeleteMapping("/{categoryId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public HttpStatus deleteCategory(@PathVariable int categoryId)
-    {
-        try
-        {
+    public HttpStatus deleteCategory(@PathVariable int categoryId) {
+        try {
             var product = productDao.getById(categoryId);
 
-            if(product == null)
+            if (product == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
             categoryDao.delete(categoryId);
 
             return HttpStatus.OK;
-        }
-        catch(Exception ex)
-        {
+        } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
