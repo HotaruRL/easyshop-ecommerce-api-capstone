@@ -36,11 +36,16 @@ public class CategoriesController {
         }
     }
 
-    @GetMapping("/{categoryId}")
+    @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<Category> getById(@PathVariable int categoryId) {
+    public ResponseEntity<Category> getById(@PathVariable int id) {
         try {
-            return new ResponseEntity<>(categoryDao.getById(categoryId), HttpStatus.OK);
+            var category = categoryDao.getById(id);
+
+            if (category == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity<>(category, HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
@@ -48,11 +53,16 @@ public class CategoriesController {
 
     // the url to return all products in category 1 would look like this
     // https://localhost:8080/categories/1/products
-    @GetMapping("{categoryId}/products")
+    @GetMapping("{id}/products")
     @PreAuthorize("permitAll()")
-    public ResponseEntity<List<Product>> getProductsById(@PathVariable int categoryId) {
+    public ResponseEntity<List<Product>> getProductsById(@PathVariable int id) {
         try {
-            return new ResponseEntity<>(productDao.listByCategoryId(categoryId), HttpStatus.OK);
+            var category = categoryDao.getById(id);
+
+            if (category == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+            return new ResponseEntity<>(productDao.listByCategoryId(id), HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
@@ -64,26 +74,26 @@ public class CategoriesController {
         return new ResponseEntity<>(categoryDao.create(category), HttpStatus.CREATED);
     }
 
-    @PutMapping("/{categoryId}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<Category> updateCategory(@PathVariable int categoryId, @RequestBody Category category) {
+    public ResponseEntity<Category> updateCategory(@PathVariable int id, @RequestBody Category category) {
         try {
-            return new ResponseEntity<>(categoryDao.update(categoryId, category), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(categoryDao.update(id, category), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
 
-    @DeleteMapping("/{categoryId}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public HttpStatus deleteCategory(@PathVariable int categoryId) {
+    public HttpStatus deleteCategory(@PathVariable int id) {
         try {
-            var product = productDao.getById(categoryId);
+            var product = productDao.getById(id);
 
             if (product == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-            categoryDao.delete(categoryId);
+            categoryDao.delete(id);
 
             return HttpStatus.OK;
         } catch (Exception ex) {
