@@ -28,7 +28,7 @@ public class CategoriesController
     // create an Autowired controller to inject the categoryDao and ProductDao
 
     // add the appropriate annotation for a get action
-    @GetMapping("/")
+    @GetMapping("")
     public ResponseEntity<List<Category>> getAll()
     {
         // find and return all categories
@@ -36,10 +36,11 @@ public class CategoriesController
     }
 
     // add the appropriate annotation for a get action
-    public Category getById(@PathVariable int id)
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getById(@PathVariable int id)
     {
         // get the category by id
-        return null;
+        return new ResponseEntity<>(categoryDao.getById(id), HttpStatus.OK);
     }
 
     // the url to return all products in category 1 would look like this
