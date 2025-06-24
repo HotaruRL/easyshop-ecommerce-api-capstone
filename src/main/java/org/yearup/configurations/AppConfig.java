@@ -1,0 +1,17 @@
+package org.yearup.configurations;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.client.WebClient;
+
+@Configuration
+public class AppConfig {
+
+    @Bean
+    public WebClient webClient(){
+        // pre-configure base URL for the Shippo API
+        return WebClient.builder()
+                .baseUrl("https://api.goshippo.com")
+                .build();
+    }
+}
