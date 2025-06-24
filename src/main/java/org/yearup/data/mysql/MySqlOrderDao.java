@@ -108,8 +108,6 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
                 } catch (SQLException ex) {
                     throw new RuntimeException(ex);
                 }
-                //TODO: clear cart after successfully creating order
-
             }
         }
     }
