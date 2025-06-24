@@ -9,6 +9,7 @@ import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.ProductDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
+import org.yearup.data.dto.QuantityDto;
 import org.yearup.models.Category;
 import org.yearup.models.ShoppingCart;
 import org.yearup.models.User;
@@ -63,7 +64,6 @@ public class ShoppingCartController {
 
             return new ResponseEntity<>(shoppingCartDao.add(userId, id), HttpStatus.ACCEPTED);
         } catch (Exception ex) {
-            ex.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
@@ -72,6 +72,25 @@ public class ShoppingCartController {
     // add a PUT method to update an existing product in the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be updated)
     // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
+    @PutMapping("/products/{id}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ShoppingCart> updateCart(Principal principal, @PathVariable int id, @RequestBody QuantityDto quantityDto) {
+        // to handle negative quantity input
+        if (quantityDto.getQuantity() < 0)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity cannot be negative.");
+
+        try {
+            // get the currently logged in username
+            String userName = principal.getName();
+            // find database user by userId
+            User user = userDao.getByUserName(userName);
+            int userId = user.getId();
+
+            return new ResponseEntity<>(shoppingCartDao.update(userId, id, quantityDto), HttpStatus.ACCEPTED);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
+        }
+    }
 
 
     // add a DELETE method to clear all products from the current users cart

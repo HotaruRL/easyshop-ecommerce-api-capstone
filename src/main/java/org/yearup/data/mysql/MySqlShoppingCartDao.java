@@ -1,7 +1,10 @@
 package org.yearup.data.mysql;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.ShoppingCartDao;
+import org.yearup.data.dto.QuantityDto;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
 import org.yearup.models.ShoppingCartItem;
@@ -78,6 +81,36 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                 throw new RuntimeException(e);
             }
         }
+
+        currentShoppingCart = getByUserId(userId);
+        return currentShoppingCart;
+    }
+
+    @Override
+    public ShoppingCart update(int userId, int id, QuantityDto quantityDto) {
+        ShoppingCart currentShoppingCart = getByUserId(userId);
+
+        if (!currentShoppingCart.contains(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else {
+            int quantity = quantityDto.getQuantity();
+
+            String sql = "UPDATE shopping_cart SET quantity = ? " +
+                    "WHERE user_id = ? AND product_id = ?";
+
+            try (Connection connection = getConnection()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setInt(1, quantity);
+                statement.setInt(2, userId);
+                statement.setInt(3, id);
+
+                statement.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
         currentShoppingCart = getByUserId(userId);
         return currentShoppingCart;
     }
