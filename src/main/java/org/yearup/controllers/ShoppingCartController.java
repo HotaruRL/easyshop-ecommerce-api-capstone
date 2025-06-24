@@ -95,5 +95,22 @@ public class ShoppingCartController {
 
     // add a DELETE method to clear all products from the current users cart
     // https://localhost:8080/cart
+    @DeleteMapping("")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public HttpStatus clearCart(Principal principal) {
+        try {
+            // get the currently logged in username
+            String userName = principal.getName();
+            // find database user by userId
+            User user = userDao.getByUserName(userName);
+            int userId = user.getId();
+
+            shoppingCartDao.clear(userId);
+
+            return HttpStatus.OK;
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
+        }
+    }
 
 }

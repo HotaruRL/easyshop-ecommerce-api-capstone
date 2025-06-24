@@ -1,5 +1,6 @@
 package org.yearup.data;
 
+import org.springframework.http.HttpStatus;
 import org.yearup.data.dto.QuantityDto;
 import org.yearup.models.Product;
 import org.yearup.models.ShoppingCart;
@@ -11,4 +12,6 @@ public interface ShoppingCartDao
     ShoppingCart add(int userId, int id);
 
     ShoppingCart update(int userId, int id, QuantityDto quantity);
+
+    void clear(int userId);
 }
