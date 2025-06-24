@@ -1,8 +1,10 @@
 package org.yearup.data.mysql;
 
 import org.springframework.stereotype.Component;
+import org.yearup.models.Product;
 import org.yearup.models.Profile;
 import org.yearup.data.ProfileDao;
+import org.yearup.models.ShoppingCartItem;
 
 import javax.sql.DataSource;
 import java.sql.*;
@@ -42,6 +44,41 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao
         {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Profile getByUserId(int userId) {
+
+        String sql = "SELECT * FROM profiles WHERE user_id = ?;";
+
+        try (Connection connection = getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(sql);
+            statement.setInt(1, userId);
+
+            ResultSet row = statement.executeQuery();
+
+            if (row.next()) {
+                return mapRow(row);
+            }
+
+            } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
+    }
+
+    protected Profile mapRow(ResultSet row) throws SQLException {
+        int userId = row.getInt("user_id");
+        String firstName = row.getString("first_name");
+         String lastName = row.getString("last_name");
+         String phone = row.getString("phone");
+         String email = row.getString("email");
+         String address = row.getString("address");
+         String city = row.getString("city");
+         String state = row.getString("state");
+         String zip = row.getString("zip");
+
+        return new Profile(userId, firstName, lastName, phone, email, address, city, state, zip);
     }
 
 }

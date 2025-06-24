@@ -28,7 +28,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     public ShoppingCart getByUserId(int userId) {
         ShoppingCart shoppingCart = new ShoppingCart();
 
-        String sql = "SELECT * FROM shopping_cart AS sc " +
+        String sql = "SELECT * FROM shopping_cart " +
                 "WHERE user_id = ?;";
 
         try (Connection connection = getConnection()) {

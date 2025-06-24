@@ -10,7 +10,6 @@ import org.yearup.data.ProductDao;
 import org.yearup.data.ShoppingCartDao;
 import org.yearup.data.UserDao;
 import org.yearup.data.dto.QuantityDto;
-import org.yearup.models.Category;
 import org.yearup.models.ShoppingCart;
 import org.yearup.models.User;
 
@@ -46,7 +45,7 @@ public class ShoppingCartController {
             // use the shoppingcartDao to get all items in the cart and return the cart
             return new ResponseEntity<>(shoppingCartDao.getByUserId(userId), HttpStatus.OK);
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
 
