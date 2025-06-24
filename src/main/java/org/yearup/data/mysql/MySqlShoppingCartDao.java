@@ -45,7 +45,44 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         return shoppingCart;
     }
 
-    private ShoppingCartItem mapRow(ResultSet row) throws SQLException {
+    @Override
+    public ShoppingCart add(int userId, int id) {
+        ShoppingCart currentShoppingCart = getByUserId(userId);
+
+        if (currentShoppingCart.contains(id)) {
+            String sql = "UPDATE shopping_cart SET quantity = quantity + 1 " +
+                    "WHERE user_id = ? AND product_id = ?";
+
+            try (Connection connection = getConnection()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setInt(1, userId);
+                statement.setInt(2, id);
+
+                statement.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            String sql = "INSERT INTO shopping_cart(user_id, product_id, quantity) " +
+                    " VALUES (?, ?, 1);";
+
+            try (Connection connection = getConnection()) {
+                PreparedStatement statement = connection.prepareStatement(sql);
+                statement.setInt(1, userId);
+                statement.setInt(2, id);
+
+                statement.executeUpdate();
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        currentShoppingCart = getByUserId(userId);
+        return currentShoppingCart;
+    }
+
+    protected ShoppingCartItem mapRow(ResultSet row) throws SQLException {
         int productId = row.getInt("product_id");
         int quantity = row.getInt("quantity");
 
