@@ -26,44 +26,92 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
 
     @Override
     public Order add(int userId, Profile profile, ShoppingCart shoppingCart) {
-        BigDecimal shipping_amount = shippingService.getCheapestShippingRate(profile);
+        Connection connection = null;
+        Order order = new Order();
 
-        String sql = "INSERT INTO orders(user_id, date, address, city, state, zip, shipping_amount ) " +
-                "VALUES (?, ?, ?, ?, ?, ?, ?);";
+        // use transaction so that INSERT for Order and OrderLineItems pass or fail together, prevent partial order
+        try {
+            connection = getConnection();
+            // start the transaction, disable autocommit to rollback in case something goes wrong
+            connection.setAutoCommit(false);
 
-        try (Connection connection = getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(sql);
-            statement.setInt(1, userId);
-            statement.setObject(2, LocalDateTime.now());
-            statement.setString(3, profile.getAddress());
-            statement.setString(4, profile.getCity());
-            statement.setString(5, profile.getState());
-            statement.setString(6, profile.getZip());
-            statement.setBigDecimal(7, shipping_amount);
+            BigDecimal shippingAmount = shippingService.getCheapestShippingRate(profile);
 
-            int rowsAffected = statement.executeUpdate();
+            String sql = "INSERT INTO orders(user_id, date, address, city, state, zip, shipping_amount ) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?);";
 
-            if (rowsAffected > 0) {
-                // Retrieve the generated keys
-                ResultSet generatedKeys = statement.getGeneratedKeys();
+            try (PreparedStatement statement = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+                statement.setInt(1, userId);
+                statement.setObject(2, LocalDateTime.now());
+                statement.setString(3, profile.getAddress());
+                statement.setString(4, profile.getCity());
+                statement.setString(5, profile.getState());
+                statement.setString(6, profile.getZip());
+                statement.setBigDecimal(7, shippingAmount);
 
-                if (generatedKeys.next()) {
-                    // Retrieve the auto-incremented ID
-                    int orderId = generatedKeys.getInt(1);
+                int rowsAffected = statement.executeUpdate();
 
-                    addOrderLineItems(connection, orderId, shoppingCart);
+                if (rowsAffected > 0) {
+                    // Retrieve the generated keys
+                    ResultSet generatedKeys = statement.getGeneratedKeys();
 
-                    return getById(orderId);
-                } else {
-                    throw new SQLException("Creating order failed.");
+                    if (generatedKeys.next()) {
+                        // Retrieve the auto-incremented ID
+                        int orderId = generatedKeys.getInt(1);
+
+                        // build order object in memory
+                        order.setOrderId(orderId);
+                        order.setUserId(userId);
+                        order.setDate(LocalDateTime.now());
+                        order.setAddress(profile.getAddress());
+                        order.setCity(profile.getCity());
+                        order.setState(profile.getState());
+                        order.setZip(profile.getZip());
+                        order.setShippingAmount(shippingAmount);
+                    } else {
+                        throw new SQLException("Creating order failed.");
+                    }
+                }
+
+                // start adding line items
+                addOrderLineItems(connection, order.getOrderId(), shoppingCart);
+
+                // build line items for order object in memory
+                for (ShoppingCartItem cartItem : shoppingCart.getItems().values()) {
+                    OrderLineItem lineItem = new OrderLineItem();
+                    lineItem.setProductId(cartItem.getProductId());
+                    lineItem.setQuantity(cartItem.getQuantity());
+                    lineItem.setSalePrice(cartItem.getSalesPrice());
+                    lineItem.setDiscount(cartItem.getDiscount());
+                    order.getLineItems().add(lineItem);
+                }
+
+                // make the change permanent to the database
+                connection.commit();
+
+                return order; //order object in memory
+            }
+        } catch (Exception e) {
+            // rollback if there's an error
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (Exception ex) {
+                    System.err.println("Rollback error:" + ex.getMessage());
                 }
             }
-            //TODO: clear cart after successfully creating order
+            throw new RuntimeException("Transaction failed:" + e.getMessage());
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.close();
+                } catch (SQLException ex) {
+                    throw new RuntimeException(ex);
+                }
+                //TODO: clear cart after successfully creating order
 
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+            }
         }
-        return null;
     }
 
     public Order getById(int orderId) {
@@ -78,6 +126,8 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
 
             if (row.next()) {
                 order = mapRowToOrder(row);
+            } else {
+                return null;
             }
 
             // if the order exists, get its line items
@@ -98,7 +148,7 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
+        return order;
     }
 
     protected static Order mapRowToOrder(ResultSet row) throws SQLException {
@@ -116,31 +166,34 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
 
     protected static OrderLineItem mapRowToLineItem(ResultSet row) throws SQLException {
         OrderLineItem item = new OrderLineItem();
-        item.setOrderLineItemId(row.getInt("line_item_id"));
+        item.setOrderLineItemId(row.getInt("order_line_item_id"));
         item.setOrderId(row.getInt("order_id"));
         item.setProductId(row.getInt("product_id"));
-        item.setSalePrice(row.getBigDecimal("sale_price"));
+        item.setSalePrice(row.getBigDecimal("sales_price"));
         item.setQuantity(row.getInt("quantity"));
         item.setDiscount(row.getBigDecimal("discount"));
         return item;
     }
 
     protected void addOrderLineItems(Connection connection, int orderId, ShoppingCart shoppingCart) {
-        String sql = "INSERT INTO order_line_items(order_id, product_id, sale_price, quantity, discount) " +
+        String sql = "INSERT INTO order_line_items(order_id, product_id, sales_price, quantity, discount) " +
                 "VALUES (?, ?, ?, ?, ?);";
-
-        for (ShoppingCartItem shoppingCartItem : shoppingCart.getItems().values()) {
-            try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            for (ShoppingCartItem shoppingCartItem : shoppingCart.getItems().values()) {
                 statement.setInt(1, orderId);
                 statement.setInt(2, shoppingCartItem.getProductId());
                 statement.setBigDecimal(3, shoppingCartItem.getSalesPrice()); // Price at time of sale
                 statement.setInt(4, shoppingCartItem.getQuantity());
                 statement.setBigDecimal(5, shoppingCartItem.getDiscount());
 
-                statement.executeUpdate();
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+                //add current statement to a batch for efficiency
+                statement.addBatch();
             }
+
+            // execute the whole batch in 1 go
+            statement.executeBatch();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
