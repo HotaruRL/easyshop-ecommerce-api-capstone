@@ -42,11 +42,13 @@ public class CategoriesController {
         try {
             var category = categoryDao.getById(id);
 
-            if (category == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
-            return new ResponseEntity<>(category, HttpStatus.OK);
+            if (category == null) {
+                return new ResponseEntity<>(category, HttpStatus.NOT_FOUND);
+            } else {
+                return new ResponseEntity<>(category, HttpStatus.OK);
+            }
         } catch (Exception ex) {
+            ex.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
     }
@@ -86,16 +88,10 @@ public class CategoriesController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public HttpStatus deleteCategory(@PathVariable int id) {
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCategory(@PathVariable int id) {
         try {
-            var product = productDao.getById(id);
-
-            if (product == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-
             categoryDao.delete(id);
-
-            return HttpStatus.OK;
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }

@@ -61,7 +61,7 @@ public class ShoppingCartController {
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return new ResponseEntity<>(shoppingCartDao.add(userId, id), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(shoppingCartDao.add(userId, id), HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
@@ -85,7 +85,7 @@ public class ShoppingCartController {
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return new ResponseEntity<>(shoppingCartDao.update(userId, id, quantityDto), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(shoppingCartDao.update(userId, id, quantityDto), HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }
@@ -96,7 +96,7 @@ public class ShoppingCartController {
     // https://localhost:8080/cart
     @DeleteMapping("")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public HttpStatus clearCart(Principal principal) {
+    public ResponseEntity<ShoppingCart> clearCart(Principal principal) {
         try {
             // get the currently logged in username
             String userName = principal.getName();
@@ -104,9 +104,7 @@ public class ShoppingCartController {
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            shoppingCartDao.clear(userId);
-
-            return HttpStatus.OK;
+            return new ResponseEntity<>(shoppingCartDao.clear(userId), HttpStatus.OK);
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
         }

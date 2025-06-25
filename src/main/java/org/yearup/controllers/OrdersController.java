@@ -54,7 +54,7 @@ public class OrdersController {
 
             shoppingCartDao.clear(userId);
 
-            return new ResponseEntity<>(newOrder, HttpStatus.CREATED);
+            return new ResponseEntity<>(newOrder, HttpStatus.OK);
         } catch (Exception ex) {
             ex.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");

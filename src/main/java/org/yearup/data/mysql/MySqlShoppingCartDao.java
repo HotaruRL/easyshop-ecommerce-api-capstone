@@ -116,7 +116,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     }
 
     @Override
-    public void clear(int userId) {
+    public ShoppingCart clear(int userId) {
         ShoppingCart currentShoppingCart = getByUserId(userId);
         String sql = "DELETE FROM shopping_cart " +
                 "WHERE user_id = ?;";
@@ -128,6 +128,8 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        currentShoppingCart = getByUserId(userId);
+        return currentShoppingCart;
     }
 
     protected ShoppingCartItem mapRow(ResultSet row) throws SQLException {

@@ -36,7 +36,7 @@ public class ProfileController {
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return new ResponseEntity<>(profileDao.getByUserId(userId), HttpStatus.FOUND);
+            return new ResponseEntity<>(profileDao.getByUserId(userId), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
@@ -53,7 +53,7 @@ public class ProfileController {
             User user = userDao.getByUserName(userName);
             int userId = user.getId();
 
-            return new ResponseEntity<>(profileDao.update(userId, profile), HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(profileDao.update(userId, profile), HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");

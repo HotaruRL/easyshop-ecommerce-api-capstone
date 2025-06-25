@@ -1,6 +1,8 @@
 package org.yearup.data.mysql;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.CategoryDao;
 import org.yearup.models.Category;
 
@@ -50,11 +52,12 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao {
 
             if (row.next()) {
                 return mapRow(row);
+            } else {
+                return null;
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        return null;
     }
 
     @Override
