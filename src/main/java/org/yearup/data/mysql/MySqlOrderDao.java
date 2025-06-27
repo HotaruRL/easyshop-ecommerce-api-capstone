@@ -77,7 +77,7 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
                 addOrderLineItems(connection, order.getOrderId(), shoppingCart);
 
                 // build line items for order object in memory
-                for (ShoppingCartItem cartItem : shoppingCart.getItems().values()) {
+                for (ShoppingCartItem cartItem : shoppingCart.getItems()) {
                     OrderLineItem lineItem = new OrderLineItem();
                     lineItem.setProductId(cartItem.getProductId());
                     lineItem.setQuantity(cartItem.getQuantity());
@@ -112,6 +112,7 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
         }
     }
 
+    @Override
     public Order getById(int orderId) {
         Order order = null;
         String sql = "SELECT * FROM orders WHERE order_id = ?";
@@ -177,7 +178,7 @@ public class MySqlOrderDao extends MySqlDaoBase implements OrderDao {
         String sql = "INSERT INTO order_line_items(order_id, product_id, sales_price, quantity, discount) " +
                 "VALUES (?, ?, ?, ?, ?);";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            for (ShoppingCartItem shoppingCartItem : shoppingCart.getItems().values()) {
+            for (ShoppingCartItem shoppingCartItem : shoppingCart.getItems()) {
                 statement.setInt(1, orderId);
                 statement.setInt(2, shoppingCartItem.getProductId());
                 statement.setBigDecimal(3, shoppingCartItem.getSalesPrice()); // Price at time of sale

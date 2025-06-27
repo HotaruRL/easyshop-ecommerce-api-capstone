@@ -110,4 +110,24 @@ public class ShoppingCartController {
         }
     }
 
+    @DeleteMapping("/products/{productId}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<ShoppingCart> removeProductFromCart(Principal principal, @PathVariable int productId) {
+        try {
+            // get the currently logged in username
+            String userName = principal.getName();
+            // find database user by userId
+            User user = userDao.getByUserName(userName);
+            int userId = user.getId();
+
+            shoppingCartDao.update(userId, productId, new QuantityDto(0));
+
+            // Return the new state of the cart
+            ShoppingCart updatedCart = shoppingCartDao.getByUserId(userId);
+            return new ResponseEntity<>(updatedCart, HttpStatus.OK);
+        } catch (Exception ex) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Server Error");
+        }
+    }
+
 }
