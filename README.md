@@ -6,7 +6,7 @@ This backend is designed to handle core e-commerce functionalities, including a 
 
 ## 🌐 Companion Web Client
 
-To see this backend in action and get a full visual, interactive experience, check out the official companion web client! It's a single-page application built to work seamlessly with this API.
+To see this backend in action and get a full visual, interactive experience, check out the official companion web client! It's a multipage application built to work seamlessly with this API.
 
 👉 **EasyShop Web Client Repo:** [https://github.com/HotaruRL/easyshop-capstone-website](https://github.com/HotaruRL/easyshop-capstone-website)
 
