@@ -4,6 +4,12 @@ Welcome to the EasyShop E-commerce Backend! This project provides a complete and
 
 This backend is designed to handle core e-commerce functionalities, including a dynamic product catalog, a persistent shopping cart for each user, secure profile management, and an order creation system that integrates with external services for shipping calculations.
 
+## 🌐 Companion Web Client
+
+To see this backend in action and get a full visual, interactive experience, check out the official companion web client! It's a single-page application built to work seamlessly with this API.
+
+👉 **EasyShop Web Client Repo:** [https://github.com/HotaruRL/easyshop-capstone-website](https://github.com/HotaruRL/easyshop-capstone-website)
+
 ## 📋 Project Requirements
 
 To get this project up and running on your local machine, you'll need the following software installed:
@@ -11,6 +17,7 @@ To get this project up and running on your local machine, you'll need the follow
 *   **Java JDK 11** or newer
 *   **Apache Maven**
 *   A running **MySQL** server instance
+*   (Optional) **MySQL Workbench** for easy database setup
 
 ## 🧱 Dependencies
 
@@ -32,11 +39,8 @@ After cloning the repository, a few configuration steps are needed to get the ap
 First, you'll need to set up the database. This application is configured to connect to a MySQL database.
 
 1.  Connect to your local or remote MySQL server.
-2.  Create a new database. The default name used in the configuration is `easyshop`. You can create it with the following SQL command:
-    ```sql
-    CREATE DATABASE easyshop;
-    ```
-3.  You will need to create the table schema. A schema file (e.g., `database/schema.sql`) should be run against your new database to create all the necessary tables.
+2.  Create a new database. Open and copy the script in `create_database.sql` file in `database` folder.
+3.  Paste it in a new script tab in MySQL WorkBench (Shortcut: `Ctrl + T` > `Ctrl + V` > `Ctrl + Enter`)
 
 ### Application Configuration
 
@@ -107,16 +111,16 @@ The server will respond with a JWT and user information. This token must be incl
 
 ```json
 {
-    "token": "eyJhbGciOiJI...",
-    "user": {
-        "id": 1,
-        "username": "newUser",
-        "authorities": [
-            {
-                "name": "ROLE_USER"
-            }
-        ]
-    }
+  "token": "eyJhbGciOiJI...",
+  "user": {
+    "id": 1,
+    "username": "newUser",
+    "authorities": [
+      {
+        "name": "ROLE_USER"
+      }
+    ]
+  }
 }
 ```
 
